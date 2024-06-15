@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" type="image/jpg" href="clock.png">
+    <title>Current Date</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #dd6b0e, #ffc400);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .container {
+            text-align: center;
+            color: white;
+        }
+        .extra-stuff, .show-time {
+            background-color: transparent;
+            max-width: 60%;
+            margin: 1rem auto;
+        }
+        .extra-stuff h1, .showtime p {
+            font-family: Helvetica;
+            font-weight: bold;
+            font-size: 3rem;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .location {
+            font-size: 2rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="showtime">
+            <p>Current Date and Time:</p>
+        </div>
+        <div class="extra-stuff">
+            <h1 id="CurrentDate"></h1>
+            <h1 id="CurrentTime"></h1>
+            <p class="location" id="UserLocation">Loading location...</p>
+        </div>
+    </div>
+
+    <script>
+        let dateElement = document.getElementById('CurrentDate');
+        let timeElement = document.getElementById('CurrentTime');
+        let locationElement = document.getElementById('UserLocation');
+
+        function updateDateTime() {
+            let now = new Date();
+            let optionsDate = { year: 'numeric', month: 'long', day: 'numeric' };
+            let optionsTime = { 
+                hour: 'numeric', 
+                minute: 'numeric', 
+                second: 'numeric', 
+                hour12: true 
+            };
+
+            dateElement.innerHTML = now.toLocaleDateString(undefined, optionsDate);
+            timeElement.innerHTML = now.toLocaleTimeString(undefined, optionsTime);
+        }
+
+        function fetchLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const apiKey = 'ed615c5422dc42508ea9d81d7dd615d6'; // Replace with your API key
+                    const url = `https://ipinfo.io/${lat},${lon}?token=${apiKey}`;
+
+                    try {
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        locationElement.innerHTML = `${data.city}, ${data.country}`;
+                    } catch (error) {
+                        locationElement.innerHTML = 'Unable to fetch location';
+                    }
+                }, () => {
+                    locationElement.innerHTML = 'Location access denied';
+                });
+            } else {
+                locationElement.innerHTML = 'Geolocation not supported';
+            }
+        }
+
+        function translatePage(language) {
+            for (const [id, text] of Object.entries(translations[language])) {
+                document.getElementById(id).textContent = text;
+            }
+        }
+
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        fetchLocation();
+    </script>
+
+</body>
+</html>
